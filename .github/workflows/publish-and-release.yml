@@ -50,14 +50,14 @@ jobs:
           echo "RPM_VERSION=${RPM_VERSION}" >> "$GITHUB_ENV"
 
           # Extract all files for the tarball under a nested directory for clean unpacking
-          mkdir -p /tmp/fastflowlm-portable
-          podman cp extract:/bin /tmp/fastflowlm-portable/
-          podman cp extract:/lib64 /tmp/fastflowlm-portable/
-          podman cp extract:/share /tmp/fastflowlm-portable/
-          podman cp extract:/flm /tmp/fastflowlm-portable/
+          mkdir -p /tmp/flm-portable
+          podman cp extract:/bin /tmp/flm-portable/
+          podman cp extract:/lib64 /tmp/flm-portable/
+          podman cp extract:/share /tmp/flm-portable/
+          podman cp extract:/flm /tmp/flm-portable/
 
           # Create the tarball wrapping the directory
-          tar -czf flm-portable.tar.gz -C /tmp fastflowlm-portable
+          tar -czf flm-portable.tar.gz -C /tmp flm-portable
 
           # Cleanup
           podman rm extract
@@ -116,17 +116,17 @@ jobs:
             echo "### Running Instructions"
             echo "Extract the tarball and run the wrapper script:"
             echo "\`\`\`bash"
-            echo "tar -xzf fastflowlm-portable-${VERSION}.tar.gz"
-            echo "cd fastflowlm-portable"
+            echo "tar -xzf flm-portable-${VERSION}.tar.gz"
+            echo "cd flm-portable"
             echo "./flm run llama3.2:1b"
             echo "\`\`\`"
           } > release_notes.md
 
           # Rename tarball for release
-          mv flm-portable.tar.gz "fastflowlm-portable-${VERSION}.tar.gz"
+          mv flm-portable.tar.gz "flm-portable-${VERSION}.tar.gz"
 
           # Create Release via GitHub CLI
           gh release create "${VERSION}" \
             --title "Release ${VERSION}" \
             --notes-file release_notes.md \
-            "fastflowlm-portable-${VERSION}.tar.gz"
+            "flm-portable-${VERSION}.tar.gz"
