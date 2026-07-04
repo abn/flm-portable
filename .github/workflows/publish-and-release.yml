@@ -43,7 +43,7 @@ jobs:
           podman create --name extract localhost/flm-portable:latest
 
           # Extract Bill of Materials (BOM)
-          podman cp extract:/share/flm/BOM.txt .
+          podman cp extract:/usr/share/flm/BOM.txt .
 
           # Parse the upstream FastFlowLM RPM version
           RPM_VERSION=$(grep "^fastflowlm:" BOM.txt | awk '{print $2}' | cut -d'-' -f1)
@@ -51,16 +51,19 @@ jobs:
 
           # Extract all files for the tarball under a nested directory for clean unpacking
           mkdir -p /tmp/flm-portable
-          podman cp extract:/bin /tmp/flm-portable/
-          podman cp extract:/lib64 /tmp/flm-portable/
-          podman cp extract:/share /tmp/flm-portable/
-          podman cp extract:/flm /tmp/flm-portable/
+          podman cp extract:/usr /tmp/flm-portable/
+          podman rm extract
+
+          # Create relative root-level symlinks in the archive
+          cd /tmp/flm-portable
+          ln -s usr/bin bin
+          ln -s usr/lib64 lib64
+          ln -s usr/share share
+          ln -s usr/bin/flm flm
+          cd -
 
           # Create the tarball wrapping the directory
           tar -czf flm-portable.tar.gz -C /tmp flm-portable
-
-          # Cleanup
-          podman rm extract
 
       - name: Log in to GHCR
         uses: redhat-actions/podman-login@v1

@@ -12,13 +12,15 @@ image/build: ## Build the scratch container image containing the portable files
 
 image/extract: ## Extract the portable files from the built container image to the workspace under dist/
 	rm -rf dist
-	mkdir -p dist/bin dist/lib64 dist/share
+	mkdir -p dist
 	podman create --name flm-portable-extract localhost/flm-portable-scratch:latest
-	podman cp flm-portable-extract:/bin/. dist/bin/
-	podman cp flm-portable-extract:/lib64/. dist/lib64/
-	podman cp flm-portable-extract:/share/. dist/share/
-	podman cp flm-portable-extract:/flm dist/flm
+	podman cp flm-portable-extract:/usr dist/
 	podman rm flm-portable-extract
+	# Create relative root-level symlinks for backward compatibility
+	cd dist && ln -s usr/bin bin \
+		&& ln -s usr/lib64 lib64 \
+		&& ln -s usr/share share \
+		&& ln -s usr/bin/flm flm
 
 ##@ Development & Testing
 
