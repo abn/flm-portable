@@ -1,6 +1,0 @@
-#!/bin/bash
-SELF_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-export XILINX_XRT="$SELF_DIR"
-export LD_LIBRARY_PATH="$SELF_DIR/lib64/flm:$SELF_DIR/lib64:/opt/xilinx/xrt/lib64:/opt/xilinx/xrt/lib:${LD_LIBRARY_PATH}"
-export CMAKE_XCLBIN_PREFIX="$SELF_DIR/share/flm"
-exec "$SELF_DIR/bin/flm-real" "$@"

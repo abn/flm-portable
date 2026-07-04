@@ -31,7 +31,7 @@ make
 # Build the staging container image
 make image/build
 
-# Extract the bundled files to your local workspace
+# Extract the bundled files to your local workspace under dist/
 make image/extract
 
 # Run a dynamic linkage check inside a clean container
@@ -40,7 +40,7 @@ make image/test
 # Create the compressed tarball for distribution
 make bundle/tar
 
-# Clean build outputs
+# Clean build outputs (removes dist/)
 make clean
 ```
 
@@ -48,11 +48,11 @@ make clean
 
 ## Running on the Host
 
-After extracting the bundle (or downloading the release tarball), run FastFlowLM using the wrapper script:
+After extracting the bundle to `dist/` (or downloading and unpacking the release tarball), run FastFlowLM using the wrapper script:
 
 ```bash
-./flm list
-./flm run llama3.2:1b
+./dist/flm list
+./dist/flm run llama3.2:1b
 ```
 
 ---
@@ -68,7 +68,7 @@ podman run --rm -it \
   -v $(pwd):/workspace:z \
   -v ~/.config/flm:/root/.config/flm:z \
   registry.fedoraproject.org/fedora:44 \
-  /workspace/flm run llama3.2:1b
+  /workspace/dist/flm run llama3.2:1b
 ```
 
 ### Options Breakdown:
@@ -78,9 +78,9 @@ podman run --rm -it \
 
 ---
 
-## Project Structure
+## Project Structure (Inside `dist/`)
 
-- `bin/`: Contains the target `flm-real` binary along with the preloaded XRT shared libraries (`libxrt_core.so.2`, etc.).
-- `lib64/`: Contains the bundled userspace libraries (e.g. FFmpeg, Boost, and XRT driver shims).
-- `share/flm/`: Contains configuration files (`model_list.json`), AMD AIE firmware binaries (`xclbins/`), and the package build Bill of Materials (`BOM.txt`).
-- `flm`: Core shell wrapper. Sets `LD_LIBRARY_PATH`, `XILINX_XRT`, and `CMAKE_XCLBIN_PREFIX`.
+- `dist/bin/`: Contains the target `flm-real` binary along with the preloaded XRT shared libraries (`libxrt_core.so.2`, etc.).
+- `dist/lib64/`: Contains the bundled userspace libraries (e.g. FFmpeg, Boost, and XRT driver shims).
+- `dist/share/flm/`: Contains configuration files (`model_list.json`), AMD AIE firmware binaries (`xclbins/`), and the package build Bill of Materials (`BOM.txt`).
+- `dist/flm`: Core shell wrapper. Sets `LD_LIBRARY_PATH`, `XILINX_XRT`, and `CMAKE_XCLBIN_PREFIX`.
