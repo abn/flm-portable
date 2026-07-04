@@ -32,11 +32,11 @@ bundle/tar: ## Create the compressed distribution tarball from dist/ (wrapped in
 	rm -rf /tmp/flm-portable
 	mkdir -p /tmp/flm-portable
 	cp -rp dist/* /tmp/flm-portable/
-	tar -czf ../flm-portable.tar.gz -C /tmp flm-portable
+	tar -czf flm-portable.tar.gz -C /tmp flm-portable
 	rm -rf /tmp/flm-portable
 
 clean: ## Remove build outputs from the workspace
-	rm -rf dist
+	rm -rf dist flm-portable.tar.gz
 
 ##@ Utilities
 
