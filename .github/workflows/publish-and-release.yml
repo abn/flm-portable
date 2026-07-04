@@ -34,7 +34,7 @@ jobs:
         uses: redhat-actions/buildah-build@v2
         with:
           image: flm-portable
-          tags: latest ${{ env.SHORT_SHA }}
+          tags: latest main-${{ env.SHORT_SHA }}
           containerfiles: ./Containerfile
 
       - name: Extract files and generate tarball
@@ -91,6 +91,9 @@ jobs:
           fi
           echo "VERSION=${VERSION}" >> "$GITHUB_ENV"
           echo "Release version is ${VERSION}"
+
+          # Tag local image with the determined release version so push-to-registry can find it
+          podman tag localhost/flm-portable:latest "localhost/flm-portable:${VERSION}"
 
       - name: Push version-tagged image to GHCR
         if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && github.event.inputs.release_suffix != '')
