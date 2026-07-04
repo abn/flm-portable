@@ -39,8 +39,8 @@ jobs:
 
       - name: Extract files and generate tarball
         run: |
-          # Create a container from the built image
-          podman create --name extract localhost/flm-portable:latest
+          # Create a container from the built image (with dummy command 'true' for scratch images)
+          podman create --name extract localhost/flm-portable:latest true
 
           # Extract Bill of Materials (BOM)
           podman cp extract:/usr/share/flm/BOM.txt .
