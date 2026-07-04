@@ -27,7 +27,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up short SHA
-        run: echo "SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-7)" >> $GITHUB_ENV
+        run: echo "SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)" >> "$GITHUB_ENV"
 
       - name: Build image using Buildah
         id: build-image
@@ -41,24 +41,24 @@ jobs:
         run: |
           # Create a container from the built image
           podman create --name extract localhost/flm-portable:latest
-          
+
           # Extract Bill of Materials (BOM)
           podman cp extract:/share/flm/BOM.txt .
-          
+
           # Parse the upstream FastFlowLM RPM version
           RPM_VERSION=$(grep "^fastflowlm:" BOM.txt | awk '{print $2}' | cut -d'-' -f1)
-          echo "RPM_VERSION=${RPM_VERSION}" >> $GITHUB_ENV
-          
-          # Extract all files for the tarball
-          mkdir -p /tmp/dist
-          podman cp extract:/bin /tmp/dist/
-          podman cp extract:/lib64 /tmp/dist/
-          podman cp extract:/share /tmp/dist/
-          podman cp extract:/flm-wrapper /tmp/dist/
-          
-          # Create the tarball
-          tar -czf flm-portable.tar.gz -C /tmp/dist .
-          
+          echo "RPM_VERSION=${RPM_VERSION}" >> "$GITHUB_ENV"
+
+          # Extract all files for the tarball under a nested directory for clean unpacking
+          mkdir -p /tmp/fastflowlm-portable
+          podman cp extract:/bin /tmp/fastflowlm-portable/
+          podman cp extract:/lib64 /tmp/fastflowlm-portable/
+          podman cp extract:/share /tmp/fastflowlm-portable/
+          podman cp extract:/flm-wrapper /tmp/fastflowlm-portable/
+
+          # Create the tarball wrapping the directory
+          tar -czf flm-portable.tar.gz -C /tmp fastflowlm-portable
+
           # Cleanup
           podman rm extract
 
@@ -86,7 +86,7 @@ jobs:
           else
             VERSION="${{ env.RPM_VERSION }}-weekly-$(date +'%Y%m%d')"
           fi
-          echo "VERSION=${VERSION}" >> $GITHUB_ENV
+          echo "VERSION=${VERSION}" >> "$GITHUB_ENV"
           echo "Release version is ${VERSION}"
 
       - name: Push version-tagged image to GHCR
@@ -102,28 +102,31 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Build release notes with the BOM details
-          echo "## FastFlowLM Linux Portable Release" > release_notes.md
-          echo "" >> release_notes.md
-          echo "This is a self-contained portable build of FastFlowLM for Linux." >> release_notes.md
-          echo "" >> release_notes.md
-          echo "### Bill of Materials (BOM)" >> release_notes.md
-          echo '```' >> release_notes.md
-          cat BOM.txt >> release_notes.md
-          echo '```' >> release_notes.md
-          echo "" >> release_notes.md
-          echo "### Running Instructions" >> release_notes.md
-          echo "Extract the tarball and run the wrapper script:" >> release_notes.md
-          echo "\`\`\`bash" >> release_notes.md
-          echo "tar -xzf fastflowlm-portable-${{ env.VERSION }}.tar.gz" >> release_notes.md
-          echo "./flm-wrapper run llama3.2:1b" >> release_notes.md
-          echo "\`\`\`" >> release_notes.md
-          
+          # Build release notes with the BOM details using a block redirect to avoid SC2129
+          {
+            echo "## FastFlowLM Linux Portable Release"
+            echo ""
+            echo "This is a self-contained portable build of FastFlowLM for Linux."
+            echo ""
+            echo "### Bill of Materials (BOM)"
+            echo '```'
+            cat BOM.txt
+            echo '```'
+            echo ""
+            echo "### Running Instructions"
+            echo "Extract the tarball and run the wrapper script:"
+            echo "\`\`\`bash"
+            echo "tar -xzf fastflowlm-portable-${VERSION}.tar.gz"
+            echo "cd fastflowlm-portable"
+            echo "./flm-wrapper run llama3.2:1b"
+            echo "\`\`\`"
+          } > release_notes.md
+
           # Rename tarball for release
-          mv flm-portable.tar.gz fastflowlm-portable-${{ env.VERSION }}.tar.gz
-          
+          mv flm-portable.tar.gz "fastflowlm-portable-${VERSION}.tar.gz"
+
           # Create Release via GitHub CLI
-          gh release create "${{ env.VERSION }}" \
-            --title "Release ${{ env.VERSION }}" \
+          gh release create "${VERSION}" \
+            --title "Release ${VERSION}" \
             --notes-file release_notes.md \
-            fastflowlm-portable-${{ env.VERSION }}.tar.gz
+            "fastflowlm-portable-${VERSION}.tar.gz"

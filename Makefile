@@ -1,8 +1,11 @@
 .DEFAULT_GOAL := help
 
-.PHONY: clean help image/build image/extract image/test bundle/tar
+.PHONY: clean help image/build image/extract image/test bundle/tar lint setup
 
 ##@ Bootstrap & Build
+
+setup: ## Install local Git hook scripts
+	uvx pre-commit install
 
 image/build: ## Build the scratch container image containing the portable files
 	podman build -t flm-portable-scratch -f Containerfile .
@@ -19,11 +22,14 @@ image/extract: ## Extract the portable files from the built container image to t
 
 ##@ Development & Testing
 
+lint: ## Lint staged files using pre-commit hooks
+	uvx pre-commit run --all-files
+
 image/test: ## Run the flm help command inside a clean Fedora container to verify libraries
 	podman run --rm -v $(PWD):/workspace:z registry.fedoraproject.org/fedora:44 /workspace/flm-wrapper --help
 
 bundle/tar: ## Create the compressed distribution tarball (excluding source/git files)
-	tar -czf ../flm-portable.tar.gz --exclude=.git --exclude=Containerfile --exclude=build_portable.sh --exclude=Makefile --exclude=README.md -C .. flm-portable
+	tar -czf ../flm-portable.tar.gz --exclude=.git --exclude=.github --exclude=.pre-commit-config.yaml --exclude=Containerfile --exclude=Makefile --exclude=README.md -C .. flm-portable
 
 clean: ## Remove build outputs from the workspace
 	rm -rf bin lib64 share flm-wrapper
