@@ -40,6 +40,12 @@ make image/test
 # Create the compressed tarball for distribution
 make bundle/tar
 
+# Install pre-commit git hooks
+make setup
+
+# Run pre-commit linter checks on all files
+make lint
+
 # Clean build outputs (removes dist/)
 make clean
 ```
