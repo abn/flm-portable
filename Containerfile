@@ -8,14 +8,17 @@ RUN dnf install -y 'dnf-command(copr)' findutils && \
 # Staging area
 RUN mkdir -p /dist/bin \
     && mkdir -p /dist/lib64/flm \
-    && mkdir -p /dist/share
+    && mkdir -p /dist/share/flm
+
+# Generate Bill of Materials (BOM)
+RUN rpm -qa --qf "%{NAME}: %{VERSION}-%{RELEASE}\n" | grep -E "fastflowlm|xrt|amdxdna" > /dist/share/flm/BOM.txt
 
 # Copy fastflowlm binary
 RUN cp -pv /usr/bin/flm /dist/bin/
 
 # Copy fastflowlm share directory (holds model_list.json and xclbins)
 RUN if [ -d /usr/share/flm ]; then \
-        cp -rpv /usr/share/flm/* /dist/share/; \
+        cp -rpv /usr/share/flm/* /dist/share/flm/; \
     fi
 
 # Copy fastflowlm specific library directory (the model .so files)
@@ -92,7 +95,7 @@ RUN echo '#!/bin/bash' > /dist/flm-wrapper && \
     echo 'SELF_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"' >> /dist/flm-wrapper && \
     echo 'export XILINX_XRT="$SELF_DIR"' >> /dist/flm-wrapper && \
     echo 'export LD_LIBRARY_PATH="$SELF_DIR/lib64/flm:$SELF_DIR/lib64:/opt/xilinx/xrt/lib64:/opt/xilinx/xrt/lib:${LD_LIBRARY_PATH}"' >> /dist/flm-wrapper && \
-    echo 'export CMAKE_XCLBIN_PREFIX="$SELF_DIR/share"' >> /dist/flm-wrapper && \
+    echo 'export CMAKE_XCLBIN_PREFIX="$SELF_DIR/share/flm"' >> /dist/flm-wrapper && \
     echo 'exec "$SELF_DIR/bin/flm" "$@"' >> /dist/flm-wrapper && \
     chmod +x /dist/flm-wrapper
 
