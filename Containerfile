@@ -13,8 +13,8 @@ RUN mkdir -p /dist/bin \
 # Generate Bill of Materials (BOM)
 RUN rpm -qa --qf "%{NAME}: %{VERSION}-%{RELEASE}\n" | grep -E "fastflowlm|xrt|amdxdna" > /dist/share/flm/BOM.txt
 
-# Copy fastflowlm binary
-RUN cp -pv /usr/bin/flm /dist/bin/
+# Copy fastflowlm binary as flm-real
+RUN cp -pv /usr/bin/flm /dist/bin/flm-real
 
 # Copy fastflowlm share directory (holds model_list.json and xclbins)
 RUN if [ -d /usr/share/flm ]; then \
@@ -46,7 +46,7 @@ RUN if [ -d /opt/xilinx/xrt/lib64 ]; then \
 
 # Gather dynamic library dependencies
 RUN ldd_paths() { ldd "$1" 2>/dev/null | grep -o '/[^ ]\+' || true; } && \
-    LIBS=$(ldd_paths /usr/bin/flm) && \
+    LIBS=$(ldd_paths /dist/bin/flm-real) && \
     for LIB in $LIBS; do \
         LIB_NAME=$(basename "$LIB"); \
         case "$LIB_NAME" in \
@@ -90,14 +90,14 @@ RUN ldd_paths() { ldd "$1" 2>/dev/null | grep -o '/[^ ]\+' || true; } && \
         done; \
     done
 
-# Create the runtime wrapper script
-RUN echo '#!/bin/bash' > /dist/flm-wrapper && \
-    echo 'SELF_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"' >> /dist/flm-wrapper && \
-    echo 'export XILINX_XRT="$SELF_DIR"' >> /dist/flm-wrapper && \
-    echo 'export LD_LIBRARY_PATH="$SELF_DIR/lib64/flm:$SELF_DIR/lib64:/opt/xilinx/xrt/lib64:/opt/xilinx/xrt/lib:${LD_LIBRARY_PATH}"' >> /dist/flm-wrapper && \
-    echo 'export CMAKE_XCLBIN_PREFIX="$SELF_DIR/share/flm"' >> /dist/flm-wrapper && \
-    echo 'exec "$SELF_DIR/bin/flm" "$@"' >> /dist/flm-wrapper && \
-    chmod +x /dist/flm-wrapper
+# Create the runtime wrapper script named flm
+RUN echo '#!/bin/bash' > /dist/flm && \
+    echo 'SELF_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"' >> /dist/flm && \
+    echo 'export XILINX_XRT="$SELF_DIR"' >> /dist/flm && \
+    echo 'export LD_LIBRARY_PATH="$SELF_DIR/lib64/flm:$SELF_DIR/lib64:/opt/xilinx/xrt/lib64:/opt/xilinx/xrt/lib:${LD_LIBRARY_PATH}"' >> /dist/flm && \
+    echo 'export CMAKE_XCLBIN_PREFIX="$SELF_DIR/share/flm"' >> /dist/flm && \
+    echo 'exec "$SELF_DIR/bin/flm-real" "$@"' >> /dist/flm && \
+    chmod +x /dist/flm
 
 FROM scratch
 COPY --from=builder /dist /

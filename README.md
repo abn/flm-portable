@@ -51,8 +51,8 @@ make clean
 After extracting the bundle (or downloading the release tarball), run FastFlowLM using the wrapper script:
 
 ```bash
-./flm-wrapper list
-./flm-wrapper run llama3.2:1b
+./flm list
+./flm run llama3.2:1b
 ```
 
 ---
@@ -68,7 +68,7 @@ podman run --rm -it \
   -v $(pwd):/workspace:z \
   -v ~/.config/flm:/root/.config/flm:z \
   registry.fedoraproject.org/fedora:44 \
-  /workspace/flm-wrapper run llama3.2:1b
+  /workspace/flm run llama3.2:1b
 ```
 
 ### Options Breakdown:
@@ -80,7 +80,7 @@ podman run --rm -it \
 
 ## Project Structure
 
-- `bin/`: Contains the target `flm` binary along with the preloaded XRT shared libraries (`libxrt_core.so.2`, etc.).
+- `bin/`: Contains the target `flm-real` binary along with the preloaded XRT shared libraries (`libxrt_core.so.2`, etc.).
 - `lib64/`: Contains the bundled userspace libraries (e.g. FFmpeg, Boost, and XRT driver shims).
 - `share/flm/`: Contains configuration files (`model_list.json`), AMD AIE firmware binaries (`xclbins/`), and the package build Bill of Materials (`BOM.txt`).
-- `flm-wrapper`: Core shell wrapper. Sets `LD_LIBRARY_PATH`, `XILINX_XRT`, and `CMAKE_XCLBIN_PREFIX`.
+- `flm`: Core shell wrapper. Sets `LD_LIBRARY_PATH`, `XILINX_XRT`, and `CMAKE_XCLBIN_PREFIX`.

@@ -54,7 +54,7 @@ jobs:
           podman cp extract:/bin /tmp/fastflowlm-portable/
           podman cp extract:/lib64 /tmp/fastflowlm-portable/
           podman cp extract:/share /tmp/fastflowlm-portable/
-          podman cp extract:/flm-wrapper /tmp/fastflowlm-portable/
+          podman cp extract:/flm /tmp/fastflowlm-portable/
 
           # Create the tarball wrapping the directory
           tar -czf flm-portable.tar.gz -C /tmp fastflowlm-portable
@@ -118,7 +118,7 @@ jobs:
             echo "\`\`\`bash"
             echo "tar -xzf fastflowlm-portable-${VERSION}.tar.gz"
             echo "cd fastflowlm-portable"
-            echo "./flm-wrapper run llama3.2:1b"
+            echo "./flm run llama3.2:1b"
             echo "\`\`\`"
           } > release_notes.md
 

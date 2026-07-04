@@ -11,13 +11,13 @@ image/build: ## Build the scratch container image containing the portable files
 	podman build -t flm-portable-scratch -f Containerfile .
 
 image/extract: ## Extract the portable files from the built container image to the workspace
-	rm -rf bin lib64 share flm-wrapper
+	rm -rf bin lib64 share flm
 	mkdir -p bin lib64 share
 	podman create --name flm-portable-extract localhost/flm-portable-scratch:latest
 	podman cp flm-portable-extract:/bin/. bin/
 	podman cp flm-portable-extract:/lib64/. lib64/
 	podman cp flm-portable-extract:/share/. share/
-	podman cp flm-portable-extract:/flm-wrapper flm-wrapper
+	podman cp flm-portable-extract:/flm flm
 	podman rm flm-portable-extract
 
 ##@ Development & Testing
@@ -26,13 +26,13 @@ lint: ## Lint staged files using pre-commit hooks
 	uvx pre-commit run --all-files
 
 image/test: ## Run the flm help command inside a clean Fedora container to verify libraries
-	podman run --rm -v $(PWD):/workspace:z registry.fedoraproject.org/fedora:44 /workspace/flm-wrapper --help
+	podman run --rm -v $(PWD):/workspace:z registry.fedoraproject.org/fedora:44 /workspace/flm --help
 
 bundle/tar: ## Create the compressed distribution tarball (excluding source/git files)
 	tar -czf ../flm-portable.tar.gz --exclude=.git --exclude=.github --exclude=.pre-commit-config.yaml --exclude=Containerfile --exclude=Makefile --exclude=README.md -C .. flm-portable
 
 clean: ## Remove build outputs from the workspace
-	rm -rf bin lib64 share flm-wrapper
+	rm -rf bin lib64 share flm
 
 ##@ Utilities
 
