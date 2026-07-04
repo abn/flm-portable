@@ -10,9 +10,6 @@ RUN mkdir -p /dist/bin \
     && mkdir -p /dist/lib64/flm \
     && mkdir -p /dist/share/flm
 
-# Generate Bill of Materials (BOM)
-RUN rpm -qa --qf "%{NAME}: %{VERSION}-%{RELEASE}\n" | grep -E "fastflowlm|xrt|amdxdna" > /dist/share/flm/BOM.txt
-
 # Copy fastflowlm binary as flm-real
 RUN cp -pv /usr/bin/flm /dist/bin/flm-real
 
@@ -98,6 +95,15 @@ RUN echo '#!/bin/bash' > /dist/flm && \
     echo 'export CMAKE_XCLBIN_PREFIX="$SELF_DIR/share/flm"' >> /dist/flm && \
     echo 'exec "$SELF_DIR/bin/flm-real" "$@"' >> /dist/flm && \
     chmod +x /dist/flm
+
+# Generate comprehensive Bill of Materials (BOM.txt) by mapping staging files back to their RPM packages
+RUN for file in $(find /dist -type f); do \
+        name=$(basename "$file"); \
+        orig_path=$(find /usr/bin /usr/lib64 /lib64 /opt/xilinx -maxdepth 3 -name "$name" -print -quit 2>/dev/null); \
+        if [ -n "$orig_path" ]; then \
+            rpm -qf --qf "%{NAME}: %{VERSION}-%{RELEASE}\n" "$orig_path" 2>/dev/null; \
+        fi; \
+    done | sort -u > /dist/share/flm/BOM.txt
 
 FROM scratch
 COPY --from=builder /dist /
