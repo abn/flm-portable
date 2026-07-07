@@ -1,4 +1,18 @@
-# FastFlowLM Portable Linux Distribution
+# FastFlowLM Portable Linux Distribution (Deprecated)
+
+> [!IMPORTANT]
+> **This repository is deprecated and no longer maintained.**
+> Native portable Linux support is now officially integrated into [FastFlowLM](https://github.com/FastFlowLM/FastFlowLM) as of release [v0.9.44](https://github.com/FastFlowLM/FastFlowLM/releases/tag/v0.9.44).
+>
+> Official portable Linux tarballs (`fastflowlm_0.9.44_linux.tar.gz` and newer) are built directly via upstream CI/CD and are available on the [FastFlowLM Releases Page](https://github.com/FastFlowLM/FastFlowLM/releases).
+>
+> Please use the official releases for the most up-to-date, optimized, and natively compiled portable builds of FastFlowLM.
+
+---
+
+## Archival Reference
+
+The build configurations, container files, and wrapper scripts below are preserved for historical reference or custom packaging needs.
 
 This repository contains the packaging and distribution configurations to build and run a fully portable, self-contained Linux version of **FastFlowLM (FLM)**.
 
